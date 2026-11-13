@@ -1,0 +1,37 @@
+:root {
+  --bg: #000;
+  --text: #fff;
+  --secondary: rgba(235,235,245,0.6);
+  --tertiary: rgba(235,235,245,0.3);
+  --sep: rgba(84,84,88,0.55);
+  --card: #1c1c1e;
+  --card2: #2c2c2e;
+  --green: #00d35a;
+  --red: #ff453a;
+  --orange: #ff9f0a;
+  --cyan: #64d2ff;
+  --blue: #0a84ff;
+  --yellow: #ffd60a;
+  --pink: #ff6b9a;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; height: 100%; }
+#app { display: flex; flex-direction: column; height: 100%; padding-bottom: env(safe-area-inset-bottom); }
+#navbar { padding: 12px 16px; padding-top: calc(12px + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; }
+#content { flex: 1; overflow: auto; padding: 0 16px 16px; }
+#tabbar {
+  display: flex; justify-content: space-around; padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  background: rgba(28,28,30,0.92); backdrop-filter: blur(20px); border-top: 0.5px solid var(--sep);
+}
+.tab { color: var(--secondary); text-align: center; font-size: 10px; min-width: 44px; min-height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+.tab.active { color: var(--text); }
+.odometer { font-family: "SF Pro Display", -apple-system, sans-serif; font-size: 56px; font-weight: 700; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; line-height: 1; }
+.paper { background: var(--orange); color: #000; padding: 3px 10px; border-radius: 14px; font-size: 13px; font-weight: 700; margin-left: 8px; }
+.card { background: var(--card); border-radius: 20px; padding: 16px; margin-bottom: 12px; }
+.agent-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--sep); }
+.agent-row:last-child { border-bottom: none; }
+.agent-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 16px; }
+.loading { background: var(--card); animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+.error { color: var(--red); font-size: 13px; padding: 8px 16px; }
+.pill { padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 600; }
