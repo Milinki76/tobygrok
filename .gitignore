@@ -1,0 +1,2 @@
+# Local plan-B data lives under d/{DATA_PATH}/ and must never be committed or deployed.
+d/
