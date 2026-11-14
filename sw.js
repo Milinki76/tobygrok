@@ -1,7 +1,7 @@
 /* Grok Bot service worker: caches the app shell only.
    Desk data (state/chart/activity/coin JSON) is never cached: it is
    cross-origin and always fetched with ?t=<epoch> and cache: no-store. */
-const SHELL = "gb-shell-v1";
+const SHELL = "gb-shell-v2";
 const FILES = ["./", "index.html", "app.css", "app.js", "chart.js", "manifest.json",
   "apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png"];
 

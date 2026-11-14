@@ -92,10 +92,20 @@
     if (!m) return;
     let v = "";
     try { v = decodeURIComponent(m[1]); } catch (_) { v = ""; }
-    if (/^[A-Za-z0-9_-]{32,128}$/.test(v)) localStorage.setItem(LS_D, v);
+    if (/^[A-Za-z0-9_-]{32,128}$/.test(v)) savePath(v);
     history.replaceState(null, "", location.pathname + location.search + "#/home");
   }
-  const dataPath = () => localStorage.getItem(LS_D);
+  function savePath(v) { try { localStorage.setItem(LS_D, v); } catch (_) {} }
+  // Accepts the whole private link or just the part after #d=
+  function pastePath(raw) {
+    raw = (raw || "").trim();
+    const m = raw.match(/#d=([^&\s]+)/);
+    let v = m ? m[1] : raw;
+    try { v = decodeURIComponent(v); } catch (_) { return false; }
+    if (!/^[A-Za-z0-9_-]{32,128}$/.test(v)) return false;
+    savePath(v); return true;
+  }
+  const dataPath = () => { try { return localStorage.getItem(LS_D); } catch (_) { return null; } };
   function dataUrl(file) {
     return BASE + encodeURIComponent(dataPath()) + "/" + file + "?t=" + Math.floor(Date.now() / 1000);
   }
@@ -572,7 +582,11 @@
   /* ---------- no data path ---------- */
   function viewNoPath() {
     return '<div class="largetitle">Grok Bot</div>' + banner() +
-      '<div class="card"><div class="ttl">Open your private desk link once</div><div class="muted" style="margin-top:6px">This phone has no desk link saved yet. Open the private link Grok Bot sent you once (it ends in #d=…). The app keeps it on this phone and removes it from the address bar.</div></div>';
+      '<div class="card"><div class="ttl">Open your private desk link once</div><div class="muted" style="margin-top:6px">This phone has no desk link saved yet. Open the private link Grok Bot sent you once (it ends in #d=…). The app keeps it on this phone and removes it from the address bar.</div></div>' +
+      '<div class="card"><div class="ttl">Or paste it here</div><div class="muted" style="margin-top:6px">Copy the private link from the Grok Bot chat and paste it below.</div>' +
+      '<input id="pastelink" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://…#d=…" style="width:100%;box-sizing:border-box;margin-top:10px;padding:12px;border-radius:10px;border:1px solid #3a3a3c;background:#1c1c1e;color:#fff;font-size:16px">' +
+      '<button id="pastego" style="width:100%;margin-top:10px;padding:12px;border-radius:10px;border:0;background:#0a84ff;color:#fff;font-size:16px;font-weight:600">Open my desk</button>' +
+      '<div id="pasteerr" class="muted" style="margin-top:8px;color:#ff453a"></div></div>';
   }
 
   /* ---------- render ---------- */
@@ -621,6 +635,12 @@
     const cp = t.closest("[data-copy]"); if (cp && cp.dataset.copy) { copy(cp.dataset.copy, 'Copied "' + cp.dataset.copy + '" · send it to the bot'); return; }
     const g = t.closest("[data-go]"); if (g) { go(g.dataset.go); return; }
     const rg = t.closest("[data-range]"); if (rg) { S.range = rg.dataset.range; render(); return; }
+    if (t.closest("#pastego")) {
+      const i = $("#pastelink");
+      if (pastePath(i && i.value)) { S.coins = {}; S.coinErr = {}; S.state = null; S.noPath = false; go("#/home"); poll(); }
+      else { const er = $("#pasteerr"); if (er) er.textContent = "That doesn't look like the desk link. Paste the whole link from the chat."; }
+      return;
+    }
     if (t.closest("#searchbtn")) { openSearch(); return; }
     if (t.closest("#bellbtn")) { markSeen(); go("#/activity"); return; }
     if (t.closest("#invite")) {
