@@ -322,33 +322,45 @@
   }
 
   /* ---------- Activity ---------- */
+  // Every row the desk writes, migrations included (Activity tab).
+  function allActivityRows() {
+    return (S.activity && S.activity.rows) || [];
+  }
+  // Home preview: decisions only, so five graduations don't push them off.
   function activityRows() {
-    return ((S.activity && S.activity.rows) || []).filter((r) => r.kind !== "migration");
+    return allActivityRows().filter((r) => r.kind !== "migration");
+  }
+  function kindLabel(k) {
+    return String(k || "event").replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
   }
   function actRow(r) {
     const k = String(r.kind || "");
     const ag = String(r.agent || "").toLowerCase();
     const color = k === "bought" ? "#0a84ff" : k === "sold" || k === "trailed" ? "#00d35a" : k === "stopped" ? "#ff453a" :
-      k.indexOf("scanner") === 0 ? "#64d2ff" : k === "rejected" ? "#2c2c2e" : (COLORS[ag] || "#2c2c2e");
-    let title = r.title || r.name || "", sub = isoToTime(r.subtitle || ""), val = r.value || "";
+      k.indexOf("scanner") === 0 || k === "migration" ? "#64d2ff" : k === "rejected" ? "#2c2c2e" : (COLORS[ag] || "#2c2c2e");
+    let title = r.title || r.name || kindLabel(k), sub = isoToTime(r.subtitle || ""), val = r.value || "";
+    if (k === "migration") { title = "Graduated " + (r.name || String(r.mint || "").slice(0, 8)); sub = "Scanner · new graduation"; val = "New"; }
     if (k === "scanner_kill") { sub = "Scanner · " + (r.subtitle || r.value || ""); val = "Killed"; }
-    if (k === "scanner_pass") { sub = "Scanner"; val = "→ auditor"; }
+    if (k === "scanner_pass") { sub = "Scanner · passed"; val = "→ auditor"; }
     if (k === "rejected" && !val) val = "Skipped";
+    if (k === "auditor_pass" && !val) val = "→ analyst";
+    if (k === "analyst_pass" && !val) val = "→ executor";
+    if (val && val.length > 40) val = val.slice(0, 40) + "…";
     const an = NAMES[ag] || (ag ? ag[0].toUpperCase() + ag.slice(1) : "");
     if (an && k.indexOf("scanner") !== 0 && sub.indexOf(an) !== 0) sub = an + (sub ? " · " + sub : "");
     val = String(val).replace(/\s\/\s/g, " · ");
     const letter = esc((NAMES[ag] || title || "?")[0]);
-    const tgt = (k === "rejected" && (ag === "auditor" || ag === "analyst")) ? "#/audit/" + r.mint : (r.mint ? "#/coin/" + r.mint : "");
+    const tgt = ((k === "rejected" || k === "auditor_pass" || k === "analyst_pass") && (ag === "auditor" || ag === "analyst") && r.mint) ? "#/audit/" + r.mint : (r.mint ? "#/coin/" + r.mint : "");
     return '<button class="row"' + (tgt ? ' data-go="' + esc(tgt) + '"' : "") + '><span class="ico" style="background:' + color + ";color:" + (color === "#2c2c2e" ? "#fff" : "#000") + '">' + letter + "</span>" +
       '<span class="main"><div class="t">' + esc(title) + '</div><div class="s">' + esc(sub) + (r.ts && !/\d\d:\d\d/.test(sub) ? " · " + esc(hhmm(r.ts)) : "") + "</div></span>" +
-      '<span class="v ' + (val === "Killed" || val === "Skipped" ? "muted" : sign(val)) + ' num">' + esc(val) + "</span></button>";
+      '<span class="v ' + (val === "Killed" || val === "Skipped" || val === "New" ? "muted" : /^→/.test(val) ? "up" : sign(val)) + ' num">' + esc(val) + "</span></button>";
   }
   function viewActivity() {
     const head = '<div class="largetitle">Activity</div>' + banner();
     if (!S.state && !S.activity) return head + skList(6);
-    const rows = activityRows();
+    const rows = allActivityRows();
     return head + (rows.length ? '<div class="list">' + rows.map(actRow).join("") + "</div>" : '<div class="list"><div class="empty">Nothing yet tonight</div></div>') +
-      (rows.length ? '<div class="note">Last 30 rows. Older rows: send "status" to the bot.</div>' : "");
+      (rows.length ? '<div class="note">Every graduation and every agent decision, newest first. Last ' + rows.length + ' rows' + (rows.length ? " (since " + esc(hhmm(rows[rows.length - 1].ts)) + ")" : "") + '. Older rows: send "status" to the bot.</div>' : "");
   }
 
   /* ---------- Agents tab ---------- */
